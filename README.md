@@ -41,36 +41,36 @@ conda activate fastlloyd
 
 ```
 ├── configs/                                                              
-│   ├── defaults.py       # Default configuration settings, dataset definitions                                                                                    
-│   └── params.py         # Parameter class for clustering and privacy settings                                                                                  
+│   ├── defaults.py       # Default configuration settings, dataset definitions
+│   └── params.py         # Parameter class for clustering and privacy settings
 │                                                                                                                                                    
 ├── data_io/                                                                                                                                          
-│   ├── comm.py           # MPI communication wrapper with delay simulation                                                                          
-│   ├── data_handler.py   # Functions for loading and processing datasets                                                                            
-│   └── fixed.py          # Fixed-point arithmetic implementation                                                                                    
+│   ├── comm.py           # MPI communication wrapper with delay simulation
+│   ├── data_handler.py   # Functions for loading and processing datasets
+│   └── fixed.py          # Fixed-point arithmetic implementation
 │                                                                                                                                                    
 ├── parties/                                                                                                                                          
-│   ├── client.py         # Client implementations (masked and unmasked)                                                                             
-│   └── server.py         # Server implementation with DP mechanisms                                                                                 
+│   ├── client.py         # Client implementations (masked and unmasked)
+│   └── server.py         # Server implementation with DP mechanisms
 │                                                                                                                                                    
 ├── plots/                                                                                                                                           
-│   ├── ablation_plots.py # Visualization for ablation studies                                                                                       
-│   ├── per_dataset.py    # Dataset-specific result visualization                                                                                 
-│   ├── scale_heatmap.py  # Heatmap generation for scalability results                                                                               
-│   ├── synthetic_bar.py  # Bar charts for synthetic dataset results                                                                                 
-│   └── timing_analysis.py # Analysis of timing experiments                                                                                          
+│   ├── ablation_plots.py # Visualization for ablation studies
+│   ├── per_dataset.py    # Dataset-specific result visualization
+│   ├── scale_heatmap.py  # Heatmap generation for scalability results
+│   ├── synthetic_bar.py  # Bar charts for synthetic dataset results
+│   └── timing_analysis.py # Analysis of timing experiments
 │                                                                                                                                                    
 ├── scripts/                                                                                                                                         
-│   ├── generator.R        # R script for generating synthetic datasets         
+│   ├── generator.R        # R script for generating synthetic datasets
 │   ├── experiment_runner.sh # Script for running accuracy and scale experiments
-│   └── timing_runner.sh   # Script for running timing experiments                                                                                                                  
+│   └── timing_runner.sh   # Script for running timing experiments
 │                                                                                                                                                    
 ├── utils/                                                                                                                                           
-│   ├── evaluations.py    # Clustering quality evaluation metrics                                                                                    
-│   └── utils.py          # General utility functions                                                                                                
+│   ├── evaluations.py    # Clustering quality evaluation metrics
+│   └── utils.py          # General utility functions
 │                                                                                                                                                    
-├── experiments.py        # Main experiment runner                                                                                                   
-├── env.yml               # Conda environment specification                                                                                          
+├── experiments.py        # Main experiment runner
+├── env.yml               # Conda environment specification
 └── README.md             # Project documentation
 ```
 
