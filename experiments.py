@@ -18,6 +18,7 @@ from typing import List, Dict, Any, Generator
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from sklearn.cluster import KMeans
 
 from configs import Params, exp_parameter_dict, num_clusters
 from data_io import shuffle_and_split, unscale, load_txt, normalize
@@ -70,6 +71,9 @@ class ExperimentRunner:
         self.results_df = None
         self.failed_experiments = []
 
+        values_unscaled = unscale(self.values.copy())
+        self.centroids_gt = KMeans(n_clusters=k).fit(values_unscaled).cluster_centers_
+
     def run_single_protocol(self, params: Params) -> Dict[str, float]:
         """
         Run a single instance of the clustering protocol.
@@ -92,9 +96,8 @@ class ExperimentRunner:
         # Handle scaling
         values_unscaled = unscale(self.values.copy()) if params.fixed else self.values
         centroids_final = unscale(centroids) if params.fixed else centroids
-
         # Evaluate results
-        metrics = evaluate(centroids_final, values_unscaled)
+        metrics = evaluate(centroids_final, values_unscaled, self.centroids_gt)
         metrics["elapsed"] = elapsed_time
         metrics["unassigned"] = unassigned
 
@@ -164,15 +167,11 @@ class ExperimentRunner:
             try:
                 metrics = self.run_single_protocol(params)
 
-                # Validate metrics
-                if any(np.isnan(value) for value in metrics.values()):
-                    raise ValueError("NAN values in experiment results")
-
-                # Collect metrics
                 for metric, value in metrics.items():
                     total_metrics[metric].append(value)
 
-                successful_experiments += metrics["Empty Clusters"] == 0
+                failed = any(np.isnan(value) for value in metrics.values())
+                successful_experiments += 1 if not failed else 0
                 experiment_count += 1
 
             except Exception as e:
@@ -353,19 +352,32 @@ def main() -> None:
     max_processes = min(os.cpu_count() or 1, len(params_list["datasets"]))
     if "timing" in exp_type:
         max_processes = 1
-
-    with ProcessPoolExecutor(max_workers=max_processes) as executor:
-        partial_fn = partial(
-            process_dataset,
-            proto=proto,
-            params_list=params_list,
-            fixed=fixed,
-            exp_type=exp_type,
-            results_folder=args.results_folder,
-            plot=args.plot,
-            with_comm=with_comm
-        )
-        executor.map(partial_fn, params_list["datasets"])
+    if max_processes > 1:
+        print(f"Running {max_processes} processes in parallel")
+        with ProcessPoolExecutor(max_workers=max_processes) as executor:
+            partial_fn = partial(
+                process_dataset,
+                proto=proto,
+                params_list=params_list,
+                fixed=fixed,
+                exp_type=exp_type,
+                results_folder=args.results_folder,
+                plot=args.plot,
+                with_comm=with_comm
+            )
+            executor.map(partial_fn, params_list["datasets"])
+    else:
+        for dataset in params_list["datasets"]:
+            process_dataset(
+                dataset,
+                proto,
+                params_list,
+                fixed,
+                exp_type,
+                args.results_folder,
+                args.plot,
+                with_comm
+            )
 
 
 if __name__ == "__main__":

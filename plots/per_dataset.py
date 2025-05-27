@@ -55,6 +55,16 @@ def create_legend_image(config):
     plt.clf()
 
 
+metrics_dict = {
+    "Normalized Intra-cluster Variance (NICV)": "NICV",
+    "Between-Cluster Sum of Squares (BCSS)": "BCSS",
+    "Silhouette Score": "Silhouette",
+    "Davies-Bouldin Index": "Davies",
+    "Calinski-Harabasz Index": "Calinski",
+    "Dunn Index": "Dunn",
+    "Mean Squared Error": "MSE",
+}
+
 # Constants and configurations
 CONFIG = {
     'eps_range': [0, 1],
@@ -74,10 +84,7 @@ CONFIG = {
     'datasets_folders': [
         "submission/accuracy"
     ],
-    'metrics': ["Normalized Intra-cluster Variance (NICV)"]
-}
-metrics_dict = {
-    "Normalized Intra-cluster Variance (NICV)": "NICV",
+    'metrics': list(metrics_dict.keys()),
 }
 
 
@@ -141,7 +148,7 @@ def finalize_plot(metric, folder, dataset=""):
     plt.ylabel(metrics_dict[metric])
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(os.path.join(folder, f"{dataset}.png"))
+    plt.savefig(os.path.join(folder, f"{dataset}_{metrics_dict[metric]}.png"))
     plt.clf()
 
 
