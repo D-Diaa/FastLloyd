@@ -1,8 +1,10 @@
 # FastLloyd: Federated, Accurate, Secure, and Tunable k-Means Clustering with Differential Privacy
 
-FastLloyd is an approach to privacy-preserving k-means clustering in horizontally federated settings. It offers
-state-of-the-art utility while providing formal privacy guarantees through differential privacy, and achieves orders of
-magnitude faster performance compared to previous privacy-preserving clustering methods.
+FastLloyd addresses the challenge of performing $k$-means clustering in a horizontally federated setting while preserving data privacy. Existing methods suffer from either high computational overhead or significantly degrade clustering utility. FastLloyd overcomes these limitations through a novel federated protocol that enhances both the differential privacy mechanism and the secure computation components. 
+
+A new DP clustering algorithm is introduced, which incorporates a radius constraint on clusters and uses relative updates to improve utility. This algorithm is integrated into a federated setting using a lightweight, secure aggregation protocol (Masked Secure Aggregation - MSA) that leverages the computational DP model. This allows intermediate differentially private updates to be published, significantly reducing the overhead of secure computation by performing expensive operations like assignments and divisions locally. 
+
+FastLloyd significantly outperforms previous work; It achieves up to a five-orders-of-magnitude speed-up in runtime compared to state-of-the-art secure federated $k$-means approaches, while also reducing communication by up to seven orders of magnitude. Furthermore, FastLloyd not only matches the utility of central DP models but improves upon state-of-the-art DP $k$-means algorithms, especially in higher dimensions and for a larger number of clusters, demonstrating up to an 88% reduction in clustering error.
 
 ## Overview
 
