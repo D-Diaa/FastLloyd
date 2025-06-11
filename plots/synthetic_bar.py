@@ -12,8 +12,12 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 import argparse
+import matplotlib as mpl
 
-plt.rcParams.update({'font.size': 32})
+# Standard plotting configuration
+mpl.rcParams['pdf.fonttype'] = 42  # Embed fonts as TrueType
+mpl.rcParams['ps.fonttype'] = 42  # For PostScript compatibility
+plt.rcParams.update({'font.size': 18})  # Standardized font size
 # Define a standard range of epsilon values for interpolation
 standard_epsilons = [0.1, 0.25, 0.5, 0.75, 1]
 
@@ -148,16 +152,17 @@ def plot_data(dimension_data_auc, dataset, data_dir, type="dimension"):
     for i, method in enumerate(methods_auc):
         plt.bar(x + i * bar_width, df_auc[method], width=bar_width, label=method, color=method_colors[method])
 
-    # Formatting
+    # Formatting with larger font sizes for labels
     if type == "dimension":
-        plt.xlabel("Number of Dimensions")
-        plt.ylabel("Normalized AUC")
+        plt.xlabel("Number of Dimensions", fontsize=30)
+        plt.ylabel("Normalized AUC", fontsize=30)
         # plt.title(f"Normalized AUC of NICV per Method for Different Dimensions ({dataset} Datasets)")
     elif type == "cluster":
-        plt.xlabel("Number of Clusters")
-        plt.ylabel("Normalized AUC")
+        plt.xlabel("Number of Clusters", fontsize=30)
+        plt.ylabel("Normalized AUC", fontsize=30)
         # plt.title(f"Normalized AUC of NICV per Method for Different Clusters ({dataset} Datasets)")
-    plt.xticks(x + bar_width * (len(methods_auc) - 1) / 2, df_auc.index)
+    plt.xticks(x + bar_width * (len(methods_auc) - 1) / 2, df_auc.index, fontsize=30)
+    plt.yticks(fontsize=20)
     # plt.legend(loc='lower left')
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.tight_layout()
@@ -175,6 +180,8 @@ def main():
     parser.add_argument("--data_dir", type=str, default="submission",
                         help="Path to the directory containing dataset folders.")
     args = parser.parse_args()
+    # prefixes = ["SynthNew"]
+    # suffixes = ["_2"]
     prefixes = ["g2"]
     suffixes = [""]
     data_dir = os.path.join(args.data_dir, "accuracy")

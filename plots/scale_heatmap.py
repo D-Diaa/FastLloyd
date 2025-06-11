@@ -19,6 +19,12 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.transforms import Bbox
 from tqdm import tqdm
+import matplotlib as mpl
+
+# Standard plotting configuration
+mpl.rcParams['pdf.fonttype'] = 42  # Embed fonts as TrueType
+mpl.rcParams['ps.fonttype'] = 42  # For PostScript compatibility
+plt.rcParams.update({'font.size': 18})  # Standardized font size
 
 quality_key = 'Normalized Intra-cluster Variance (NICV)'
 
@@ -84,7 +90,6 @@ def extract_data(main_folder, method_names, eps):
 
 def generate_heatmap_from_matrix(matrix, x_labels, y_labels, cmap, vmin, vmax, file_name, fmt=None, no_bar=False):
     plt.figure(figsize=(10, 8))
-    plt.rcParams.update({'font.size': 18})
 
     if fmt is None:
         def custom_format(val):
@@ -115,9 +120,9 @@ def generate_heatmap_from_matrix(matrix, x_labels, y_labels, cmap, vmin, vmax, f
     plt.gca().invert_yaxis()  # Invert the y-axis
     if not no_bar:
         bbox = Bbox([[7.5, -1], [9, 7.5]])
-        plt.savefig(f'{main_folder}/{file_name}.png', bbox_inches=bbox)
+        plt.savefig(f'{main_folder}/{file_name}.pdf', bbox_inches=bbox)
     else:
-        plt.savefig(f'{main_folder}/{file_name}.png')
+        plt.savefig(f'{main_folder}/{file_name}.pdf')
     plt.close()
 
 

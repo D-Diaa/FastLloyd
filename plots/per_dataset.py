@@ -19,8 +19,14 @@ import numpy as np
 import pandas as pd
 from matplotlib.lines import Line2D
 from tqdm import tqdm
+import matplotlib as mpl
 
-plt.rcParams.update({'font.size': 16})
+from configs.defaults import real_datasets
+
+# Standard plotting configuration
+mpl.rcParams['pdf.fonttype'] = 42  # Embed fonts as TrueType
+mpl.rcParams['ps.fonttype'] = 42  # For PostScript compatibility
+plt.rcParams.update({'font.size': 18})  # Standardized font size
 
 
 # Configuration for legend handles and styling
@@ -50,7 +56,7 @@ def create_legend_image(config):
     ax.axis('off')
     # Remove all the margins and paddings by setting bbox_inches to 'tight' and pad_inches to 0
     # The dpi (dots per inch) parameter might be adjusted for higher resolution
-    fig.savefig(os.path.join(config['datasets_folders'][0], "legend.png"), bbox_inches='tight', pad_inches=0, dpi=300)
+    fig.savefig(os.path.join(config['datasets_folders'][0], "legend.pdf"), bbox_inches='tight', pad_inches=0, dpi=300)
     # Clear the plot to free up memory
     plt.clf()
 
@@ -93,6 +99,9 @@ def process_datasets(config):
     for dataset_folder in config['datasets_folders']:
         datasets = list(os.listdir(dataset_folder))
         for dataset in tqdm(datasets):
+            if dataset not in real_datasets:
+                print(f"Skipping dataset: {dataset}")
+                continue
             folder = os.path.join(dataset_folder, dataset)
             if not isdir(folder):
                 continue
@@ -148,7 +157,7 @@ def finalize_plot(metric, folder, dataset=""):
     plt.ylabel(metrics_dict[metric])
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(os.path.join(folder, f"{dataset}_{metrics_dict[metric]}.png"))
+    plt.savefig(os.path.join(folder, f"{dataset}_{metrics_dict[metric]}.pdf"), bbox_inches='tight')
     plt.clf()
 
 

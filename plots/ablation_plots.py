@@ -12,18 +12,23 @@ import sys
 from collections import defaultdict
 from typing import Dict, List, Tuple
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.lines import Line2D
 
-from configs import exp_parameter_dict
+from configs.defaults import ablate_dataset
+
+# Standard plotting configuration
+mpl.rcParams['pdf.fonttype'] = 42  # Embed fonts as TrueType
+mpl.rcParams['ps.fonttype'] = 42  # For PostScript compatibility
+plt.rcParams.update({'font.size': 18})  # Standardized font size
 
 # Constants
 QUALITY_KEY = 'Normalized Intra-cluster Variance (NICV)'
 FIGURE_SIZE = (15, 15)
 COLOR_MAP_NAME = 'tab10'
-plt.rcParams.update({'font.size': 20})
 
 
 def extract_meta(dataset_name: str) -> Tuple[int, int]:
@@ -168,7 +173,7 @@ def process_experiment_data(folder: str, param_name: str) -> None:
     per_eps = defaultdict(dict)
 
     # Read and organize data
-    for dataset in exp_parameter_dict[f'ablation']['datasets']:
+    for dataset in ablate_dataset:
         file_path = f'{folder}/ablation/{dataset}/variances.csv'
         if not os.path.isfile(file_path):
             continue
