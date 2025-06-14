@@ -25,7 +25,7 @@ def safe_metric(func, default, *args, **kwargs):
         return default
 
 
-def evaluate(centroids, values, gt_centroids):
+def evaluate(centroids, values, gt_centroids, metrics="nicv"):
     """
     Evaluates the quality of a clustering solution using multiple metrics.
 
@@ -47,19 +47,22 @@ def evaluate(centroids, values, gt_centroids):
         Array of data points to be clustered, shape (n_samples, n_features)
     gt_centroids : numpy.ndarray
         Array of ground truth centroids, shape (n_clusters, n_features)
+    metrics : str or list, optional
+        Metrics to compute. Default is "nicv". If a list, can include:
+        - "nicv": Normalized Intra-cluster Variance
+        - "bcss": Between-Cluster Sum of Squares
+        - "empty_clusters": Count of empty clusters
+        - "silhouette": Silhouette Score
+        - "davies_bouldin": Davies-Bouldin Index
+        - "calinski_harabasz": Calinski-Harabasz Index
+        - "dunn_index": Dunn Index
+        - "mse": Mean Squared Error
+        - "all": Compute all metrics
 
     Returns
     -------
     dict
-        Dictionary containing the computed metrics:
-        - 'Normalized Intra-cluster Variance (NICV)': float
-        - 'Between-Cluster Sum of Squares (BCSS)': float
-        - 'Empty Clusters': int
-        - 'Silhouette Score': float
-        - 'Davies-Bouldin Index': float
-        - 'Calinski-Harabasz Index': float
-        - 'Dunn Index': float
-        - 'Mean Squared Error': float
+        Dictionary containing the computed metrics
 
     Raises
     ------
@@ -69,38 +72,82 @@ def evaluate(centroids, values, gt_centroids):
     distances = cdist(values, centroids)
     associations = get_cluster_associations(distances)
     non_empty_clusters = np.unique(associations).size
+    empty_clusters = centroids.shape[0] - non_empty_clusters
 
     if non_empty_clusters == 0:
         raise ValueError("No non-empty clusters detected.")
 
-    if non_empty_clusters < 2:
-        silhouette = -1
-        davies_bouldin = np.inf
-        calinski_harabasz = 0
-        dunn = 0
-    else:
-        silhouette = safe_metric(silhouette_score, -1, values, associations)
-        davies_bouldin = safe_metric(davies_bouldin_score, np.inf, values, associations)
-        calinski_harabasz = safe_metric(calinski_harabasz_score, 0, values, associations)
-        dunn = safe_metric(evaluate_dunn_index, 0, associations, values)
-
-    empty_clusters = centroids.shape[0] - non_empty_clusters
-    cost_matrix = cdist(centroids, gt_centroids)
-    # Solve the assignment problem to minimize total squared error
-    row_ind, col_ind = linear_sum_assignment(cost_matrix)
-    # Extract the matched squared distances and average them
-    matched_sq_dists = cost_matrix[row_ind, col_ind]
-    mse = matched_sq_dists.mean()
-    return {
-        "Normalized Intra-cluster Variance (NICV)": evaluate_NICV(associations, centroids, values),
-        "Between-Cluster Sum of Squares (BCSS)": evaluate_BCSS(associations, centroids, values),
-        "Empty Clusters": empty_clusters,
-        "Silhouette Score": silhouette,
-        "Davies-Bouldin Index": davies_bouldin,
-        "Calinski-Harabasz Index": calinski_harabasz,
-        "Dunn Index": dunn,
-        "Mean Squared Error": mse
+    # Define metric functions and their configurations
+    metric_config = {
+        "nicv": {
+            "name": "Normalized Intra-cluster Variance (NICV)",
+            "func": lambda: evaluate_NICV(associations, centroids, values),
+            "default": 0,
+            "requires_multi_cluster": False
+        },
+        "bcss": {
+            "name": "Between-Cluster Sum of Squares (BCSS)",
+            "func": lambda: evaluate_BCSS(associations, centroids, values),
+            "default": 0,
+            "requires_multi_cluster": False
+        },
+        "empty_clusters": {
+            "name": "Empty Clusters",
+            "func": lambda: empty_clusters,
+            "default": 0,
+            "requires_multi_cluster": False
+        },
+        "mse": {
+            "name": "Mean Squared Error",
+            "func": lambda: evaluate_MSE(centroids, gt_centroids),
+            "default": 0,
+            "requires_multi_cluster": False
+        },
+        "silhouette": {
+            "name": "Silhouette Score",
+            "func": lambda: safe_metric(silhouette_score, -1, values, associations),
+            "default": -1,
+            "requires_multi_cluster": True
+        },
+        "davies_bouldin": {
+            "name": "Davies-Bouldin Index",
+            "func": lambda: safe_metric(davies_bouldin_score, np.inf, values, associations),
+            "default": np.inf,
+            "requires_multi_cluster": True
+        },
+        "calinski_harabasz": {
+            "name": "Calinski-Harabasz Index",
+            "func": lambda: safe_metric(calinski_harabasz_score, 0, values, associations),
+            "default": 0,
+            "requires_multi_cluster": True
+        },
+        "dunn_index": {
+            "name": "Dunn Index",
+            "func": lambda: safe_metric(evaluate_dunn_index, 0, associations, values),
+            "default": 0,
+            "requires_multi_cluster": True
+        }
     }
+
+    # Determine which metrics to compute
+    if metrics == "all":
+        metrics_list = list(metric_config.keys())
+    elif isinstance(metrics, str):
+        metrics_list = [metrics]
+    else:
+        metrics_list = metrics
+
+    # Compute requested metrics
+    results = {}
+    for metric in metrics_list:
+        if metric in metric_config:
+            config = metric_config[metric]
+            if config["requires_multi_cluster"] and non_empty_clusters < 2:
+                results[config["name"]] = config["default"]
+            else:
+                results[config["name"]] = config["func"]()
+
+    return results
 
 
 def get_cluster_associations(distances):
@@ -259,3 +306,28 @@ def evaluate_dunn_index(associations, values):
         return np.nan
 
     return min_inter_dist / max_intra_dist
+
+
+def evaluate_MSE(centroids, gt_centroids):
+    """
+    Calculates the Mean Squared Error between predicted and ground truth centroids.
+    
+    Uses the Hungarian algorithm to find the optimal assignment between predicted
+    and ground truth centroids, then computes the average squared distance.
+
+    Parameters
+    ----------
+    centroids : numpy.ndarray
+        Array of predicted cluster centroids, shape (n_clusters, n_features)
+    gt_centroids : numpy.ndarray
+        Array of ground truth centroids, shape (n_clusters, n_features)
+
+    Returns
+    -------
+    float
+        The Mean Squared Error between optimally matched centroids
+    """
+    cost_matrix = cdist(centroids, gt_centroids)
+    row_ind, col_ind = linear_sum_assignment(cost_matrix)
+    matched_sq_dists = cost_matrix[row_ind, col_ind]
+    return matched_sq_dists.mean()

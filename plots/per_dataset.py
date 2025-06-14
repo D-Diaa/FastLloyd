@@ -21,7 +21,7 @@ from matplotlib.lines import Line2D
 from tqdm import tqdm
 import matplotlib as mpl
 
-from configs.defaults import real_datasets
+from configs.defaults import accuracy_datasets
 
 # Standard plotting configuration
 mpl.rcParams['pdf.fonttype'] = 42  # Embed fonts as TrueType
@@ -99,7 +99,7 @@ def process_datasets(config):
     for dataset_folder in config['datasets_folders']:
         datasets = list(os.listdir(dataset_folder))
         for dataset in tqdm(datasets):
-            if dataset not in real_datasets:
+            if dataset not in accuracy_datasets:
                 print(f"Skipping dataset: {dataset}")
                 continue
             folder = os.path.join(dataset_folder, dataset)
@@ -117,6 +117,9 @@ def process_datasets(config):
 
 def plot_data(data, folder, config):
     for metric in config['metrics']:
+        if metric not in data.columns:
+            print(f"Metric {metric} not found in data for {config['dataset']}. Skipping.")
+            continue
         filtered_data = data[['method', 'dp', 'eps', 'post', metric, f"{metric}_h"]].sort_values(by='eps')
         combinations = filtered_data[['method', 'dp', 'post']].drop_duplicates().values
         for method, dp, post in combinations:
