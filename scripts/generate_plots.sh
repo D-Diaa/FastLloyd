@@ -1,12 +1,12 @@
 #!/bin/bash
-# Reproduction script for FastLloyd experiments
-# This script runs experiments and generates plots
-# Prerequisites: Run setup.sh first to extract data and create environment
+# Report script for FastLloyd experiments
+# This script generates all plots and analysis from experiment results
+# Prerequisites: Run setup.sh and run_experiments.sh first
 
 set -e  # Exit on any error
 
-echo "=== FastLloyd Reproduction Script ==="
-echo "Running experiments and generating plots..."
+echo "=== FastLloyd Report Script ==="
+echo "Generating plots and analysis from experiment results..."
 
 # Get the script directory and project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -26,43 +26,18 @@ if [[ "$CONDA_DEFAULT_ENV" != "fastlloyd" ]]; then
     exit 1
 fi
 
-# Step 1: Run experiment scripts
+# Check if submission directory exists (should contain experiment results)
+if [ ! -d "$SUBMISSION_DIR" ]; then
+    echo "⚠ Error: Submission directory not found: $SUBMISSION_DIR"
+    echo "Please run 'bash scripts/run_experiments.sh' first to generate experiment results"
+    exit 1
+fi
+
 echo ""
-echo "=== Step 1: Running Experiments ==="
+echo "=== Generating Plots and Analysis ==="
 
 # Set Python path
 export PYTHONPATH="$PROJECT_ROOT"
-
-# Run experiment runner (accuracy and scale experiments)
-echo "Running experiment runner script..."
-if [ -f "scripts/experiment_runner.sh" ]; then
-    bash scripts/experiment_runner.sh
-    echo "✓ Experiment runner completed"
-    echo "Experiment results saved to: $SUBMISSION_DIR"
-else
-    echo "⚠ Warning: experiment_runner.sh not found"
-fi
-
-# Run timing experiments
-echo ""
-echo "Running timing experiments..."
-if [ -f "scripts/timing_runner.sh" ]; then
-    bash scripts/timing_runner.sh
-    echo "✓ Timing experiments completed"
-    echo "Timing results saved to: $SUBMISSION_DIR"
-else
-    echo "⚠ Warning: timing_runner.sh not found"
-fi
-
-# Step 2: Generate plots
-echo ""
-echo "=== Step 2: Generating Plots ==="
-
-# Set up submission directory for plots
-if [ ! -d "$SUBMISSION_DIR" ]; then
-    mkdir -p "$SUBMISSION_DIR"
-    echo "Created submission directory: $SUBMISSION_DIR"
-fi
 
 # Per-dataset plots
 echo "Generating per-dataset plots..."
@@ -118,13 +93,11 @@ else
     echo "⚠ Warning: timing_analysis.py not found"
 fi
 
-# Step 3: Summary of outputs
 echo ""
-echo "=== Reproduction Complete ==="
-echo "All experiments and plots have been generated!"
+echo "=== Report Generation Complete ==="
+echo "All plots and analysis have been generated!"
 echo ""
 echo "Output locations:"
-echo "• Experiment results: $SUBMISSION_DIR"
 echo "• Per-dataset plots: $SUBMISSION_DIR/accuracy/[dataset_name]/"
 echo "• Scale heatmaps: $SUBMISSION_DIR/scale/"
 echo "• G2 bar chart: $SUBMISSION_DIR/g2_dimension_auc.pdf"
