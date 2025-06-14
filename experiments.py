@@ -70,6 +70,9 @@ class ExperimentRunner:
 
         self.results_df = None
         self.failed_experiments = []
+        # TODO: make eval metrics = nicv to save time
+        self.eval_metrics = "all" if exp_type == "accuracy" or dataset in accuracy_datasets else "nicv"
+        # self.eval_metrics = "nicv"
 
         values_unscaled = unscale(self.values.copy())
         self.centroids_gt = KMeans(n_clusters=k).fit(values_unscaled).cluster_centers_
@@ -97,7 +100,7 @@ class ExperimentRunner:
         values_unscaled = unscale(self.values.copy()) if params.fixed else self.values
         centroids_final = unscale(centroids) if params.fixed else centroids
         # Evaluate results
-        metrics = evaluate(centroids_final, values_unscaled, self.centroids_gt)
+        metrics = evaluate(centroids_final, values_unscaled, self.centroids_gt, self.eval_metrics)
         metrics["elapsed"] = elapsed_time
         metrics["unassigned"] = unassigned
 
@@ -349,7 +352,7 @@ def main() -> None:
         params_list["num_clients"] = 2
 
     # Run experiments in parallel
-    max_processes = min(os.cpu_count() or 1, len(params_list["datasets"]))
+    max_processes = min(os.cpu_count()-16 or 1, len(params_list["datasets"]))
     if "timing" in exp_type:
         max_processes = 1
     if max_processes > 1:
