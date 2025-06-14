@@ -126,11 +126,11 @@ def load_data(data_dir, dataset_prefix, dataset_suffix=""):
 
     return dimension_data_auc, cluster_data_auc
 
-
-def plot_data(dimension_data_auc, dataset, data_dir, type="dimension"):
+def plot_data(dimension_data_auc, dataset, data_dir, type="dimension", scale="log"):
     """Plot the normalized AUC data.
 
     Args:
+        scale: str: Scale for the y-axis ('linear' or 'log').
         dimension_data_auc (dict): Aggregated data for plotting.
         dataset (str): Dataset name for labeling.
         data_dir (str): Directory to save the plots.
@@ -166,7 +166,12 @@ def plot_data(dimension_data_auc, dataset, data_dir, type="dimension"):
     # plt.legend(loc='lower left')
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.tight_layout()
-    plt.yscale('log')
+    if scale == "linear":
+        plt.yscale('linear')
+    elif scale == "log":
+        plt.yscale('log')
+    else:
+        raise ValueError(f"Unknown scale type: {scale}. Supported types are 'linear' and 'log'.")
 
     # Save the plot
     output_path = os.path.join(data_dir, f"{dataset}_{type}_auc.pdf")
@@ -179,17 +184,19 @@ def main():
     parser = argparse.ArgumentParser(description="Process NICV data and plot AUC.")
     parser.add_argument("--data_dir", type=str, default="submission",
                         help="Path to the directory containing dataset folders.")
+    parser.add_argument("--dataset", type=str, default="g2",
+                        help="Dataset family prefix (e.g., 'g2', 'Synth').")
     args = parser.parse_args()
-    # prefixes = ["SynthNew"]
-    # suffixes = ["_2"]
-    prefixes = ["g2"]
-    suffixes = [""]
-    data_dir = os.path.join(args.data_dir, "accuracy")
-    for dataset_prefix, dataset_suffix in zip(prefixes, suffixes):
-        dimension_data_auc, cluster_data_auc = load_data(data_dir, dataset_prefix, dataset_suffix)
-        dataset = dataset_prefix + dataset_suffix
-        plot_data(dimension_data_auc, dataset, args.data_dir, type="dimension")
-        plot_data(cluster_data_auc, dataset, args.data_dir, type="cluster")
+    data_dir = os.path.join(args.data_dir, "scale")
+    if args.dataset == "g2":
+        dimension_data_auc, cluster_data_auc = load_data(data_dir, args.dataset)
+        plot_data(dimension_data_auc, args.dataset, args.data_dir, type="dimension", scale="log")
+    elif args.dataset == "Synth":
+        dimension_data_auc, cluster_data_auc = load_data(data_dir, args.dataset, "_2")
+        dataset = args.dataset + "_2"
+        plot_data(cluster_data_auc, dataset, args.data_dir, type="cluster", scale="linear")
+    else:
+        raise ValueError(f"Unknown dataset family: {args.dataset}. Supported families are 'g2' and 'Synth'.")
 
 
 if __name__ == "__main__":

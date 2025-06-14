@@ -29,10 +29,7 @@ ablate_dataset = [
 g2 = [file.replace(".txt", "") for file in os.listdir("data") if file.startswith("g2")]
 
 # Real-world benchmark datasets
-real_datasets = ["iris", "s1", "house", "adult", "lsun", "birch2", "wine", "yeast", "breast", "mnist"]
-
-# Combined datasets for accuracy experiments
-accuracy_datasets = g2 + real_datasets
+accuracy_datasets = ["iris", "s1", "house", "adult", "lsun", "birch2", "wine", "yeast", "breast", "mnist"]
 
 # Datasets for timing experiments
 timing_datasets = [
@@ -47,6 +44,7 @@ timing_datasets = [
 
 # Datasets for scaling experiments
 scale_datasets = [file.replace(".txt", "") for file in os.listdir("data") if file.startswith("Synth")]
+scale_datasets += g2
 
 # Experimental configurations
 
