@@ -71,15 +71,15 @@ def process_all_datasets(extraction_dir):
 if __name__ == "__main__":
     argc = len(sys.argv)
     if argc > 1:
-        extraction_dir = sys.argv[1]
+        main_dir = sys.argv[1]
     else:
-        extraction_dir = "submission"
-    for folder in os.listdir(extraction_dir):
-        if folder.startswith("timing_"):
+        main_dir = "submission"
+    for folder in list(os.listdir(main_dir)):
+        if folder.startswith("timing_") and os.path.isdir(os.path.join(main_dir, folder)):
             n_clients = folder.split("_")[1]
-            extraction_dir = os.path.join(extraction_dir, folder)
-            final_results_df = process_all_datasets(extraction_dir)
+            results_dir = os.path.join(main_dir, folder)
+            final_results_df = process_all_datasets(results_dir)
             final_results_df = final_results_df.sort_values(by=["n", "k", "d"])
-            final_results_df.to_csv(f"{extraction_dir}/table.csv", index=False)
-            with open(f"submission/table_{n_clients}.tex", 'w') as tex_file:
+            final_results_df.to_csv(f"{results_dir}/table.csv", index=False)
+            with open(f"{main_dir}/table_{n_clients}.tex", 'w') as tex_file:
                 final_results_df.to_latex(tex_file, index=False, escape=False)
