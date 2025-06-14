@@ -21,6 +21,7 @@ import pandas as pd
 from sklearn.cluster import KMeans
 
 from configs import Params, exp_parameter_dict, num_clusters
+from configs.defaults import accuracy_datasets
 from data_io import shuffle_and_split, unscale, load_txt, normalize
 from utils import evaluate, mean_confidence_interval, plot_clusters
 
